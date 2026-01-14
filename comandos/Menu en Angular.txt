@@ -1,0 +1,124 @@
+Crear componente Navbar
+ng generate component nombre-del-componente
+
+
+
+Archivos a modificar
+app.config.ts
+import { ApplicationConfig, provideBrowserGlobalErrorListeners, provideZoneChangeDetection } from '@angular/core';
+import { provideRouter } from '@angular/router';
+import { provideHttpClient } from '@angular/common/http'; // 👈 ESTE IMPORT FALTABA
+import { routes } from './app.routes';
+
+export const appConfig: ApplicationConfig = {
+  providers: [
+    provideBrowserGlobalErrorListeners(),
+    provideZoneChangeDetection({ eventCoalescing: true }),
+    provideRouter(routes),
+    provideHttpClient() // 👈 Ahora Angular sabrá qué hacer con esto
+  ]
+};
+
+
+app.routes.ts
+import { Routes } from '@angular/router';
+import { LibroComponente } from './libro-componente/libro-componente';
+
+
+export const routes: Routes = [
+  { path: '', redirectTo: '/libros', pathMatch: 'full' },
+  { path: 'libros', component: LibroComponente }
+];
+
+app.ts
+import { Component, signal } from '@angular/core';
+import { RouterOutlet } from '@angular/router';
+import { LibroComponente } from './libro-componente/libro-componente';
+import { Navbar } from './navbar/navbar';
+
+@Component({
+  selector: 'app-root',
+  standalone: true,
+  imports: [RouterOutlet, Navbar],
+  templateUrl: './app.html',
+  styleUrl: './app.css'
+})
+export class App {
+  protected readonly title = signal('biblioteca-frontend');
+}
+
+
+app.html
+
+<app-navbar></app-navbar>
+
+<div class="container">
+  <router-outlet></router-outlet>
+</div>
+
+
+main.ts
+import { bootstrapApplication } from '@angular/platform-browser';
+import { App } from './app/app';
+import { provideHttpClient } from '@angular/common/http';
+import { appConfig } from './app/app.config'; // 👈 importa el archivo de configuración
+
+bootstrapApplication(App, {
+  providers: [
+    provideHttpClient(),
+    ...appConfig.providers 
+  ]
+}).catch(err => console.error(err));
+
+
+Navbar TS
+import { Component } from '@angular/core';
+import { RouterModule } from '@angular/router';
+
+@Component({
+  selector: 'app-navbar',
+  standalone: true,
+  imports: [RouterModule], // Necesario para routerLink
+  templateUrl: './navbar.html',
+  styleUrl: './navbar.css'
+})
+export class Navbar {
+
+}
+
+Html basico
+<nav class="navbar">
+  <a routerLink="/" class="logo">📚 Mi Librería</a>
+
+  <ul class="nav-links">
+    <li><a routerLink="/libros">Listar libros</a></li>
+    <li><a routerLink="/libros/nuevo">Agregar libro</a></li>
+  </ul>
+</nav>
+
+
+Css basico
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #4a148c;
+  padding: 10px 20px;
+  color: white;
+}
+
+.nav-links {
+  list-style: none;
+  display: flex;
+  gap: 20px;
+}
+
+.nav-links a {
+  color: white;
+  text-decoration: none;
+  font-weight: bold;
+}
+
+.nav-links a:hover {
+  text-decoration: underline;
+}
